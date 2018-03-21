@@ -23,4 +23,3 @@ string = input('fuck you:')
 val1 = str2bin(string)
 print(val1)
 print(bin2str(val1))
-    
