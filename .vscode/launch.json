@@ -55,7 +55,7 @@
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [],
             "args": [
-                "-e", "a.jpg"
+                "-e", "a.png"
             ],
             "internalConsoleOptions": "neverOpen"
         },

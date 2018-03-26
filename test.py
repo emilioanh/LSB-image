@@ -14,7 +14,7 @@ def bin2str(binary):
     return mess.decode()
 
 def encode(hexcode, digit):
-    if hexcode[-1] in ('0', '1', '2', '3', '4', '5'):
+    if hexcode[-1] in ('5'):
         hexcode = hexcode[:-1] + digit
         return hexcode
     else:
@@ -27,6 +27,10 @@ def decode(hexcode):
         return None
 
 def hide(filename, message):
+    with open(filename,'rb') as file:
+        item = file.read()
+        b = bytearray(item)
+
     img = Image.open(filename)
     binary = str2bin(message) + '1111111111111110'
     if img.mode in ('RGBA'):
@@ -49,4 +53,41 @@ def hide(filename, message):
         img.putdata(newData)
         img.save(filename, "PNG")
         return "Completed!"
-    return "Incorrect Image Mode, can't hide this shit!"
+    return "Incorrect Image Mode, couldn't hide :("
+
+def retr(filename):
+    img = Image.open(filename)
+    binary = ''
+
+    if img.mode in ('RGBA'):
+        img = img.convert('RGBA')
+        datas = img.getdata()
+
+        for item in datas:
+            digit = decode(rgb2hex(item[0], item[1], item[2]))
+            if digit == None:
+                pass
+            else:
+                binary = binary + digit
+                if(binary[-16:] == '1111111111111110'):
+                    print("Success!!!")
+                    return bin2str(binary[:-16])
+        return bin2str(binary)
+    return "Incorrect Image Mode, couldn't retrieve :("
+
+def Main():
+    parser = optparse.OptionParser('usage %prog ' + '-e/-d <target file>')
+    parser.add_option('-e', dest = 'hide', type='string',  help='target pic path to hide text')
+    parser.add_option('-d', dest = 'retr', type='string',  help='target pic path to retrieve text')
+    (options, args) = parser.parse_args()
+    if (options.hide != None):
+        text = input("Enter a message to Hide: ")
+        print(hide(options.hide, text))
+    elif (options.retr != None):
+    	print(retr(options.retr))
+    else:    
+        print(parser.usage)
+        exit(0)
+
+if __name__ == '__main__':
+    Main()
