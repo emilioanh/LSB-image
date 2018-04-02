@@ -1,12 +1,10 @@
 import binascii
+import optparse
 
 HEADER_SIZE = 54 # Gia tri header cua file bmp
 DELIMITER = "$" # Phan cach giua gia tri so ki tu can giau vao hinh va message
 
 # User Configurations
-TextToHide = "Fucking hide this!"
-ImageFile = "a.bmp"
-StegImageFile = "hidden_flash.bmp"
 
 def bin2str(binary):
     mess = binascii.unhexlify('%x'%(int('0b'+binary, 2)))
@@ -20,9 +18,9 @@ class GiautinLSB(object):
         self.original_image = ''
         self.text_to_hide = ''
 
-    def open_image(self):
+    def open_image(self, filename):
         # Mo file de xu ly
-        with open(ImageFile, "rb") as f:
+        with open(filename, "rb") as f:
             self.original_image = f.read()
 
     # Doc va ghi lai phan header vao file moi (chi ghi vao phan data)
@@ -79,12 +77,12 @@ class GiautinLSB(object):
 
     def close_file(self):
         # Ghi ra thanh file moi
-        with open(StegImageFile, "wb") as out:
+        with open("hidden_pic.bmp", "wb") as out:
             out.write(self.new_image_data)
 
-    def run(self, stega_text):
+    def run(self, filename, stega_text):
         self.text_to_hide = stega_text
-        self.open_image()
+        self.open_image(filename)
         self.read_header()
         self.hide_text_size()
         self.hide(self.text_to_hide)
@@ -93,8 +91,8 @@ class GiautinLSB(object):
 
 class GiaimaLSB:
 
-    def __init__(self):
-        self.fd = open(StegImageFile, 'rb')
+    def __init__(self, filename):
+        self.fd = open(filename, 'rb')
         self.number_of_chars_in_text = 0
         self.original_text = ''
 
@@ -150,13 +148,20 @@ class GiaimaLSB:
         return self.original_text
 
 def main():
-    stega_instance = GiautinLSB()
-    stega_instance.run(TextToHide)
-    print("Successfully finished hiding text")
-    destag_insta = GiaimaLSB()
-    text = destag_insta.get_text()
-    a = "Successfully decoded, text is: {}".format(text)
-    print(a)
+    parser = optparse.OptionParser('usage %prog ' + '-e/-d <target file>')
+    parser.add_option('-e', dest = 'hide', type='string',  help='target pic path to hide text')
+    parser.add_option('-d', dest = 'retr', type='string',  help='target pic path to retrieve text')
+    (options, args) = parser.parse_args()
+    if (options.hide != None):
+        TextToHide = input("Enter a message to Hide: ")
+        stega_instance = GiautinLSB()
+        stega_instance.run(options.hide, TextToHide)
+        print("Successfully finished hiding text")
+    elif (options.retr != None):
+        destag_insta = GiaimaLSB(options.retr)
+        text = destag_insta.get_text()
+        a = "Successfully decoded, text is: {}".format(text)
+        print(a)
 
 if __name__ == '__main__':
 	main()
